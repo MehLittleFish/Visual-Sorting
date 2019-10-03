@@ -24,7 +24,7 @@ bars = []
 CANVAS_WIDTH = 1001
 CANVAS_HEIGHT = 500
 spacing = 0
-population = 101
+population = 102
 
 
 def bar(order, height, id, shoop):
@@ -32,22 +32,21 @@ def bar(order, height, id, shoop):
     x1 = (order-1) * (10)
     x2 = x1 + 10
     y2 = height * 5
-    shoop.create_rectangle(x1, 0, x2, y2, tag=x, fill='orange', outline="")
+    shoop.create_rectangle(x1, y2, x2, CANVAS_HEIGHT, tag=x, fill='orange', outline="black")
 
 
 def update_bar(id1, id2):
     w = canvas.coords(id1)
     y = canvas.coords(id2)
     if not w or not y or y[3] <= 0 or w[3] <= 0:
-        canvas.itemconfig(id1, fill='red')
-        canvas.itemconfig(id2, fill='blue')
-
+        canvas.itemconfig(id1, fill='DodgerBlue')
+        canvas.itemconfig(id2, fill='DodgerBlue')
     else:
         temp_id = id2
-        canvas.coords(id1, y[0], 0, y[2], w[3])
-        canvas.coords(id2, w[0], 0, w[2], y[3])
-        canvas.itemconfig(id1, fill='red')
-        canvas.itemconfig(id2, fill='blue')
+        canvas.coords(id1, y[2], w[1], y[0], CANVAS_HEIGHT)
+        canvas.coords(id2, w[2], y[1], w[0], CANVAS_HEIGHT)
+        canvas.itemconfig(id1, fill='DodgerBlue')
+        canvas.itemconfig(id2, fill='DodgerBlue')
         canvas.itemconfig(id2, tag=id1)
         canvas.itemconfig(id1, tag=temp_id)
 
@@ -57,7 +56,7 @@ def overtake(id, height):
     if not w or w[3] <= 0:
         pass
     else:
-        canvas.coords(id, w[0], 0, w[2], height*5)
+        canvas.coords(id, w[0], height*5, w[2], CANVAS_HEIGHT)
 
 
 def update_key(id):
@@ -91,7 +90,6 @@ def insertion_sort(array):
             array[j+1].id = array[j].id
             array[j].id = temp
             j -= 1
-
         array[j + 1].height = key
 
 
@@ -155,22 +153,41 @@ def partition(arr, low, high):
     return g + 1
 
 
+def bubble_sort(arr):
+    for i in range(0, len(arr)):
+        swap = False
+        for x in range(1, len(arr)):
+            if arr[x].height < arr[x-1].height:
+                arr[x], arr[x-1] = arr[x-1], arr[x]
+                canvas.after(5, update_bar(arr[x].id, arr[x-1].id))
+                canvas.update()
+                swap = True
+        if swap is False:
+            break
+
+
 def gui_start_quick():
     start_button = tk.Button(root, text="QUICK", command=start_call_quick, bd=0, font=my_font, bg='deep sky blue')
     start_button.pack()
-    start_button.place(x=10, y=660, height=50, width=333)
+    start_button.place(x=10, y=660, height=50, width=250)
 
 
 def gui_start_merge():
     start_button = tk.Button(root, text="MERGE", command=start_call_merge, bd=0, font=my_font, bg='light slate blue')
     start_button.pack()
-    start_button.place(x=343, y=660, height=50, width=333)
+    start_button.place(x=260, y=660, height=50, width=250)
 
 
 def gui_start_insertion():
     start_button = tk.Button(root, text="INSERTION", command=start_call_insertion, bd=0, font=my_font, bg='aquamarine')
     start_button.pack()
-    start_button.place(x=676, y=660, height=50, width=333)
+    start_button.place(x=510, y=660, height=50, width=250)
+
+
+def gui_start_bubble():
+    start_button = tk.Button(root, text="BUBBLE", command=start_call_bubble, bd=0, font=my_font, bg='medium aquamarine')
+    start_button.pack()
+    start_button.place(x=760, y=660, height=50, width=250)
 
 
 def gui_generator():
@@ -204,6 +221,12 @@ def start_call_insertion():
     canvas.update()
 
 
+def start_call_bubble():
+    bubble_sort(bar_list)
+    canvas.after(0, finished())
+    canvas.update()
+
+
 def create_array():
     bar_list.clear()
     total = var.get() + 1
@@ -219,7 +242,7 @@ def change_bars():
         canvas.coords(i, 0, 0, 0, 0)
 
     for i in range(1, len(bar_list)):
-        canvas.coords(i, (i-1) * size, 0, ((i-1) * size) + size, bar_list[i].height*5)
+        canvas.coords(i, (i-1) * size, bar_list[i].height*5, ((i-1) * size) + size, CANVAS_HEIGHT)
         canvas.itemconfig(i, fill="orange")
 
 
@@ -231,7 +254,7 @@ root.geometry("1020x800+250+250")
 canvas = tk.Canvas(root, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, background='gray15')
 canvas.pack()
 
-for x in range(0, population):
+for x in range(1, population):
     bar_list.append(Bar(rn.randint(1, 100), x, x))
 
 for i in range(1, len(bar_list)):
@@ -240,7 +263,8 @@ for i in range(1, len(bar_list)):
 gui_start_quick()
 gui_start_merge()
 gui_start_insertion()
+gui_start_bubble()
 gui_slider()
 gui_generator()
-
+change_bars()
 root.mainloop()
